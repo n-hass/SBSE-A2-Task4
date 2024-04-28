@@ -28,30 +28,30 @@
 // }
 
 plugins {
-    java
-    application
+	java
+	application
+	id("io.freefair.lombok") version "8.6"
 }
 
 allprojects {
-    repositories {
-        mavenCentral()
-        jcenter()
-    }
+	repositories {
+		mavenCentral()
+	}
 }
 
 subprojects {
-    apply(plugin = "application")
+	apply(plugin = "application")
 
-    dependencies {
-        implementation("org.moeaframework:moeaframework:4.0") // Verify version
-        implementation("org.jfree:jfreesvg:3.4.3") // Verify version
-    }
+	dependencies {
+		implementation("org.moeaframework:moeaframework:4.0")
+		implementation("org.jfree:jfreesvg:3.4.3")
+	}
 
-    tasks.withType<JavaCompile> {
-        options.encoding = "UTF-8"
-        if (JavaVersion.current().isJava9Compatible) {
-            options.compilerArgs.addAll(listOf("--release", "8"))
-        }
-    }
+	tasks.withType<JavaCompile> {
+		options.encoding = "UTF-8"
+		if (JavaVersion.current().isJava9Compatible) {
+			options.compilerArgs.addAll(listOf("--release", "17"))
+		}
+	}
 }
 
