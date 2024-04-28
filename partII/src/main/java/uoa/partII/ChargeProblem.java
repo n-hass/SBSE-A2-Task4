@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.imageio.ImageIO;
 
@@ -59,7 +60,6 @@ public class ChargeProblem extends AbstractProblem {
 		try {
 			saveToCSV("color.csv", colourValues.getGuiComponents(), colourValues.getRGB());
 		} catch (NullPointerException e) {
-			System.out.println("Error: colourValues is null. Generating new colour values.");
 			tmpValues = generateColourValues();
 			int x = 0;
 			for (int i = 0; i < tmpValues.getRGB().size(); i++) {
@@ -93,9 +93,11 @@ public class ChargeProblem extends AbstractProblem {
 
 		// f: minimise charge consumption
 		f = calculateChargeConsumption(image);
+		// f = calculateChargeConsumptionFromComputed(tmpValues);
 
 		// g: minimize total change from the original
 		g = calculateTotalChange(image);
+		// g = calculateTotalChangeFromComputed(tmpValues);
 
 		solution.setAttribute("imageFileName", imageFilename);
 		solution.setObjective(0, f);
@@ -125,7 +127,7 @@ public class ChargeProblem extends AbstractProblem {
     }
 
 	private ColourMapping generateColourValues() {
-        try {
+    
             // guiComponents contains GUI components' name.
             ArrayList<String> guiComponents = new ArrayList<>();
             guiComponents.add("mainFrameColor"); // both apps
@@ -192,10 +194,7 @@ public class ChargeProblem extends AbstractProblem {
             RGB.add(new ArrayList<Integer>(Arrays.asList(new Integer[]{randomInt.nextInt(256), randomInt.nextInt(256), randomInt.nextInt(256)})));
 
             return new ColourMapping(guiComponents, RGB);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-		return null;
+        
     }
 
 	private void saveToCSV(String filePath, ArrayList<String> guiComponents, ArrayList<ArrayList<Integer>> RGB) {
@@ -260,6 +259,22 @@ public class ChargeProblem extends AbstractProblem {
 		return totalCost;
 	}
 
+	private double calculateChargeConsumptionFromComputed(ColourMapping image) {
+		var components = image.getRGB();
+
+		double totalCost = 0;
+
+		for (int i = 0; i < components.size(); i++) {
+			double red = components.get(i).get(0);
+			double green = components.get(i).get(1);
+			double blue = components.get(i).get(2);
+
+			totalCost += calculateCostOfPixel(red, green, blue) * (ColourMapping.componentPixelCount(i) / Resolution);
+		}
+
+		return totalCost;
+	}
+
 	private double calculateCostOfPixel(double r, double g, double b) {
 		double RED = 131;
 		double GREEN = 142;
@@ -289,6 +304,29 @@ public class ChargeProblem extends AbstractProblem {
 
 				totalChange += Math.abs(red - originalRed) + Math.abs(green - originalGreen) + Math.abs(blue - originalBlue) / Resolution;
 			}
+		}
+
+		return totalChange;
+	}
+
+	private double calculateTotalChangeFromComputed(ColourMapping image) {
+		var components = image.getRGB();
+
+		var original = ColourMapping.OriginalImage;
+
+		double totalChange = 0;
+
+		for (int i = 0; i < components.size(); i++) {
+			
+			double red = components.get(i).get(0);
+			double green = components.get(i).get(1);
+			double blue = components.get(i).get(2);
+
+			double originalRed = original.get(i).get(0);
+			double originalGreen = original.get(i).get(1);
+			double originalBlue = original.get(i).get(2);
+
+			totalChange += Math.abs(red - originalRed) + Math.abs(green - originalGreen) + Math.abs(blue - originalBlue) / Resolution;
 		}
 
 		return totalChange;
