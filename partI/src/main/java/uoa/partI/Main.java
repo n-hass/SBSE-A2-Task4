@@ -57,9 +57,14 @@ public class Main {
 					analyzer.addAll(algorithm, results);
 				}
 				
-				Plot populationPlot = PopulationPlots.generateParetoPlot(resultMap, problemName, populationSize);
-
-				PopulationPlots.savePopulationPlot(populationPlot, problemName, populationSize);
+				if (problemName.startsWith("DTLZ")) {
+					// PopulationPlots.generate3dPlot(resultMap, problemName, populationSize);
+					Plot populationPlot = PopulationPlots.generate2dPlot(resultMap, problemName, populationSize);
+					PopulationPlots.save2dPlot(populationPlot, problemName, populationSize);
+				} else {
+					Plot populationPlot = PopulationPlots.generate2dPlot(resultMap, problemName, populationSize);
+					PopulationPlots.save2dPlot(populationPlot, problemName, populationSize);
+				}
 				
 				analyzer.getAnalysis().display(allAnalysisResults);
 				
