@@ -20,7 +20,6 @@ public class Main {
 		int[] populations = { 20, 100 };
 		int maxEvaluations = 10000;
 		int numSeeds = 10;
-		// String[] problems = { "ZDT1", "ZDT2", "DTLZ3_3", "DTLZ4_3" };
 		// initialise problems
 		Problem[] problems = new Problem[] {
 			new org.moeaframework.problem.ZDT.ZDT1(),
@@ -58,7 +57,8 @@ public class Main {
 				}
 				
 				if (problemName.startsWith("DTLZ")) {
-					// PopulationPlots.generate3dPlot(resultMap, problemName, populationSize);
+					PopulationPlots.generate3dPlot(resultMap, problemName, populationSize);
+
 					Plot populationPlot = PopulationPlots.generate2dPlot(resultMap, problemName, populationSize);
 					PopulationPlots.save2dPlot(populationPlot, problemName, populationSize);
 				} else {

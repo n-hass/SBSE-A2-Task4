@@ -43,6 +43,8 @@ public class PopulationPlots {
 			plot.add(algorithm, combined);
 		}
 
+		plot.setTitle("Population of " + problem + " Solutions, with µ = " + populationSize);
+
 		return plot;
 	}
 
@@ -76,7 +78,9 @@ public class PopulationPlots {
 		int pointsCnt = 0;
 		Color[]   colors = new Color[size];
 
-		// build coords
+		double minZ = Double.MAX_VALUE;
+		double maxZ = -Double.MAX_VALUE;
+
 		for (String algorithm : resultMap.keySet()) {
 
 			List<NondominatedPopulation> results = resultMap.get(algorithm);
@@ -85,6 +89,10 @@ public class PopulationPlots {
 					double[] original = result.get(i).getObjectives();
 					var point = new Coord3d(original[0], original[1], original[2]);
 					
+					// Update the Z range
+					minZ = Math.min(minZ, point.z);
+					maxZ = Math.max(maxZ, point.z);
+
 					points[pointsCnt] = point;
 					if (algorithm.equals("NSGAII")) {
 						colors[pointsCnt] = new Color(0.0f, 0.0f, 1.0f);
@@ -98,6 +106,14 @@ public class PopulationPlots {
 
 		}
 
+		// Second pass: Adjust colors based on Z value for depth perception
+		double zRange = maxZ - minZ;
+		for (int i = 0; i < pointsCnt; i++) {
+			double normalizedZ = (points[i].z - minZ) / zRange;
+			float alpha = (float) (0.5 + 0.5 * normalizedZ); // Scale alpha between 0.5 and 1.0
+			colors[i].a = alpha;
+		}
+
 		Coord3d[] newPoints = new Coord3d[pointsCnt];
 		Color[] newColors = new Color[pointsCnt];
 		int j = 0;
@@ -108,20 +124,22 @@ public class PopulationPlots {
 		}
 
 		Scatter scatter = new Scatter(newPoints, newColors);
-		scatter.setWidth(10);
+		scatter.setWidth(5);
 		Quality q = Quality.Advanced();
 		var chart = new EmulGLChartFactory().newChart(q);
-
-		// Adding a legend
-		AWTColorbarLegend legend = new AWTColorbarLegend(scatter, chart.getView().getAxis().getLayout());
 		
 		chart.getScene().add(scatter);
 		chart.getAxisLayout().setXAxisLabel("Objective 1");
 		chart.getAxisLayout().setYAxisLabel("Objective 2");
 		chart.getAxisLayout().setZAxisLabel("Objective 3");
-		chart.getLegends().add(legend);
+		// chart.getLegends().add(legend);
+		
 
 		File file = new File("results/populationPlots/" + problem + "_" + populationSize + " (3d).png");
 		chart.screenshot(file);
+
+		// EmulGLSkin skin = EmulGLSkin.on(chart);
+		// skin.getCanvas().setProfileDisplayMethod(true);
+		chart.dispose();
 	}
 }
